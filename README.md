@@ -20,4 +20,4 @@ Any of the order based methods are not implemented. Also delete is not implement
 
 
 ## Credit
-The original implmentation is in Java taken from the book [__Algorithms, 4th Edition by Robert Sedgewick and Kevin Wayne__](https://algs4.cs.princeton.edu/32bst/BST.java.html).
+Many ideas are taken from the original implmentation in Java taken from the book [__Algorithms, 4th Edition by Robert Sedgewick and Kevin Wayne__](https://algs4.cs.princeton.edu/32bst/BST.java.html).
