@@ -1,95 +1,110 @@
 use std::cmp::Ordering;
 
-#[derive(Debug, Clone)]
-struct BSTNode<K, V>
+#[derive(Debug)]
+struct BinarySearchTreeST<K, V>
 where
-    K: Ord + Clone,
-    V: Clone,
+    K: Ord,
 {
-    key: K,
-    value: V,
+    key: Option<K>,
+    value: Option<V>,
     size: i32,
-    right: Option<Box<BSTNode<K, V>>>,
-    left: Option<Box<BSTNode<K, V>>>,
+    right: Option<Box<BinarySearchTreeST<K, V>>>,
+    left: Option<Box<BinarySearchTreeST<K, V>>>,
 }
 
-struct ST<K, V>
+impl<K, V> BinarySearchTreeST<K, V>
 where
-    K: Ord + Clone,
-    V: Clone,
+    K: Ord,
 {
-    root: Option<Box<BSTNode<K, V>>>,
-}
-
-impl<K, V> ST<K, V>
-where
-    K: Ord + Clone,
-    V: Clone,
-{
-    fn size(&self) -> i32 {
-        Self::size_node(&self.root)
+    fn new() -> Self {
+        BinarySearchTreeST {
+            key: Option::None,
+            value: Option::None,
+            size: 1,
+            right: Option::None,
+            left: Option::None,
+        }
     }
 
-    fn size_node(node: &Option<Box<BSTNode<K, V>>>) -> i32 {
+    fn size(&self) -> i32 {
+        self.size
+    }
+
+    fn size_node(node: &Option<Box<BinarySearchTreeST<K, V>>>) -> i32 {
         match node {
-            Option::Some(x) => x.size,
+            Option::Some(x) => x.size(),
             Option::None => 0,
         }
     }
 
     fn get(&self, key: K) -> Option<&V> {
-        Self::get_node(&self.root, key)
-    }
-
-    fn get_node<'a>(node: &'a Option<Box<BSTNode<K, V>>>, key: K) -> Option<&'a V> {
-        match node {
-            Option::None => Option::None,
-            Option::Some(x) => match key.cmp(&x.key) {
-                Ordering::Less => return Self::get_node(&x.left, key),
-                Ordering::Greater => return Self::get_node(&x.right, key),
-                Ordering::Equal => return Option::Some(&x.value),
+        match &self.key {
+            Option::Some(k) => match key.cmp(&k) {
+                Ordering::Less => match &self.left {
+                    Option::Some(node) => node.get(key),
+                    Option::None => Option::None,
+                },
+                Ordering::Greater => match &self.right {
+                    Option::Some(node) => node.get(key),
+                    Option::None => Option::None,
+                },
+                Ordering::Equal => {
+                    if let Option::Some(v) = &self.value {
+                        Option::Some(v)
+                    } else {
+                        Option::None
+                    }
+                }
             },
+            Option::None => Option::None,
         }
     }
 
     fn put(&mut self, key: K, value: V) {
-        self.root = Self::put_node(self.root.clone(), key, value);
-    }
-
-    fn put_node(node: Option<Box<BSTNode<K, V>>>, key: K, value: V) -> Option<Box<BSTNode<K, V>>> {
-        if let Option::Some(mut x) = node {
-            match key.cmp(&x.key) {
-                Ordering::Less => {
-                    x.left = Option::Some(Self::put_node(x.left, key, value).unwrap())
+        match &self.key {
+            Option::Some(k) => match key.cmp(&k) {
+                Ordering::Less => match &mut self.left {
+                    Option::Some(node) => node.put(key, value),
+                    Option::None => {
+                        let mut node = Self::new();
+                        node.put(key, value);
+                        self.left = Option::Some(Box::new(node));
+                    }
+                },
+                Ordering::Greater => match &mut self.right {
+                    Option::Some(node) => node.put(key, value),
+                    Option::None => {
+                        let mut node = Self::new();
+                        node.put(key, value);
+                        self.right = Option::Some(Box::new(node));
+                    }
+                },
+                Ordering::Equal => {
+                    self.value = Option::Some(value);
                 }
-                Ordering::Greater => {
-                    x.right = Option::Some(Self::put_node(x.right, key, value).unwrap())
-                }
-                Ordering::Equal => x.value = value,
+            },
+            Option::None => {
+                self.key = Option::Some(key);
+                self.value = Option::Some(value);
             }
-            x.size = Self::size_node(&x.left) + Self::size_node(&x.right) + 1;
-            return Option::Some(x);
-        } else {
-            return Option::Some(Box::new(BSTNode {
-                key,
-                value,
-                size: 1,
-                right: Option::None,
-                left: Option::None,
-            }));
         }
+        self.size = Self::size_node(&self.left) + Self::size_node(&self.right) + 1;
     }
 }
 
 fn main() {
-    let mut st = ST::<i32, String> { root: Option::None };
-    st.put(13, String::from("This"));
-    st.put(12, String::from("Hello"));
+    let mut st = BinarySearchTreeST::<i32, String>::new();
+    st.put(15, String::from("This"));
+    st.put(11, String::from("Is"));
+    st.put(17, String::from("A"));
+    st.put(12, String::from("Test"));
     st.put(15, String::from("That"));
+    println!("{:#?}", st);
 
-    if let Option::Some(val) = st.get(15) {
+    if let Option::Some(val) = st.get(12) {
         println!("{}", &val);
     } else {
         println!("Key not found");
     }
+    println!("{}", st.size());
 }
