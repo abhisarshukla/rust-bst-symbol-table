@@ -53,22 +53,22 @@ where
     }
 
     fn put(&mut self, key: K, value: V) {
-        self.root = Self::put_node(&mut self.root, key, value);
+        self.root = Self::put_node(self.root.clone(), key, value);
     }
 
-    fn put_node(
-        node: &mut Option<Box<BSTNode<K, V>>>,
-        key: K,
-        value: V,
-    ) -> Option<Box<BSTNode<K, V>>> {
-        if let Option::Some(x) = node {
+    fn put_node(node: Option<Box<BSTNode<K, V>>>, key: K, value: V) -> Option<Box<BSTNode<K, V>>> {
+        if let Option::Some(mut x) = node {
             match key.cmp(&x.key) {
-                Ordering::Less => x.left = Self::put_node(&mut x.left, key, value),
-                Ordering::Greater => x.right = Self::put_node(&mut x.right, key, value),
+                Ordering::Less => {
+                    x.left = Option::Some(Self::put_node(x.left, key, value).unwrap())
+                }
+                Ordering::Greater => {
+                    x.right = Option::Some(Self::put_node(x.right, key, value).unwrap())
+                }
                 Ordering::Equal => x.value = value,
             }
             x.size = Self::size_node(&x.left) + Self::size_node(&x.right) + 1;
-            return Option::Some(x.clone());
+            return Option::Some(x);
         } else {
             return Option::Some(Box::new(BSTNode {
                 key,
@@ -85,9 +85,9 @@ fn main() {
     let mut st = ST::<i32, String> { root: Option::None };
     st.put(13, String::from("This"));
     st.put(12, String::from("Hello"));
-    st.put(11, String::from("That"));
+    st.put(15, String::from("That"));
 
-    if let Option::Some(val) = st.get(11) {
+    if let Option::Some(val) = st.get(15) {
         println!("{}", &val);
     } else {
         println!("Key not found");
