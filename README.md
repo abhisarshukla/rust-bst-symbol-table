@@ -15,6 +15,7 @@ Any of the order based methods are not implemented. Also delete is not implement
 - `floor(key)` 🚧
 - `rank(key)` 🚧
 - `select(key)` 🚧
+- `delete(key)` 🚧
 - Iterators 🚧
 
 
